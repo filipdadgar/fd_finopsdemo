@@ -2,10 +2,16 @@ apiVersion: v1
 kind: Service
 metadata:
   name: grafana
+  namespace: finops-demo
+  annotations:
+    external-dns.alpha.kubernetes.io/hostname: finops.dadgar.se
+    external-dns.alpha.kubernetes.io/ttl: "120" #optional
 spec:
+  externalTrafficPolicy: Local
+  type: LoadBalancer
   selector:
     app: grafana
   ports:
     - name: http
-      port: 3000
+      port: 8433
       targetPort: 3000

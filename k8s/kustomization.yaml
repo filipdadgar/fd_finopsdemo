@@ -6,7 +6,6 @@ resources:
   - namespace.yaml
   - configmap-prometheus.yaml
   - configmap-otel-collector.yaml
-  - configmap-grafana-datasource.yaml
   - pvc-prometheus.yaml
   - pvc-grafana.yaml
   - job-finops-seeder.yaml
@@ -18,3 +17,23 @@ resources:
   - service-prometheus.yaml
   - deployment-grafana.yaml
   - service-grafana.yaml
+
+generatorOptions:
+  disableNameSuffixHash: true
+
+configMapGenerator:
+  - name: grafana-datasource
+    files:
+      - datasources.yaml=../grafana/provisioning/datasources/prometheus.yml
+  - name: grafana-dashboards-provider
+    files:
+      - dashboards.yaml=../grafana/provisioning/dashboards/dashboards.yml
+  - name: grafana-dashboards
+    files:
+      - 01-cost-overview.json=../grafana/dashboards/01-cost-overview.json
+      - 02-budget-tracking.json=../grafana/dashboards/02-budget-tracking.json
+      - 03-tagging-compliance.json=../grafana/dashboards/03-tagging-compliance.json
+      - 04-hr-attribution.json=../grafana/dashboards/04-hr-attribution.json
+      - 05-procurement.json=../grafana/dashboards/05-procurement.json
+      - 06-revenue-partner.json=../grafana/dashboards/06-revenue-partner.json
+      - 07-operations.json=../grafana/dashboards/07-operations.json
