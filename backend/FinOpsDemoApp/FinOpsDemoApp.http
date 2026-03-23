@@ -1,0 +1,6 @@
+@FinOpsDemoApp_HostAddress = http://localhost:5072
+
+GET {{FinOpsDemoApp_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

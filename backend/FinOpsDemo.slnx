@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="FinOpsDemoApp.Tests/FinOpsDemoApp.Tests.csproj" />
+  <Project Path="FinOpsDemoApp/FinOpsDemoApp.csproj" />
+</Solution>

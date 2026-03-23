@@ -1,0 +1,195 @@
+{
+  "uid": "finops-02-budget-tracking",
+  "title": "Budget Tracking",
+  "tags": ["finops", "budget"],
+  "timezone": "browser",
+  "schemaVersion": 37,
+  "version": 2,
+  "refresh": "30s",
+  "time": { "from": "now-90d", "to": "now" },
+  "templating": {
+    "list": [
+      {
+        "name": "cost_center",
+        "type": "query",
+        "datasource": { "type": "prometheus", "uid": "prometheus" },
+        "query": "label_values(finops_demo_budget_monthly_eur, cost_center)",
+        "includeAll": true,
+        "allValue": ".*",
+        "multi": true,
+        "current": { "text": "All", "value": "$__all" }
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": 1,
+      "type": "bargauge",
+      "title": "Budget Utilisation by Cost Centre",
+      "description": "MTD spend as % of monthly budget. Procurement is expected to overshoot.",
+      "gridPos": { "x": 0, "y": 0, "w": 24, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        {
+          "expr": "sum by (cost_center) (finops_demo_budget_spend_mtd_eur{cost_center=~\"$cost_center\"}) / sum by (cost_center) (finops_demo_budget_monthly_eur{cost_center=~\"$cost_center\"}) * 100",
+          "legendFormat": "{{cost_center}}",
+          "refId": "A",
+          "instant": true
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "min": 0,
+          "max": 120,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 80 },
+              { "color": "orange", "value": 95 },
+              { "color": "red", "value": 100 }
+            ]
+          }
+        }
+      },
+      "options": {
+        "reduceOptions": { "calcs": ["lastNotNull"] },
+        "orientation": "horizontal",
+        "displayMode": "gradient"
+      }
+    },
+    {
+      "id": 2,
+      "type": "timeseries",
+      "title": "MTD Spend vs Monthly Budget",
+      "gridPos": { "x": 0, "y": 8, "w": 16, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        {
+          "expr": "sum by (cost_center) (finops_demo_budget_spend_mtd_eur{cost_center=~\"$cost_center\"})",
+          "legendFormat": "Spend {{cost_center}}",
+          "refId": "A",
+          "range": true
+        },
+        {
+          "expr": "sum by (cost_center) (finops_demo_budget_monthly_eur{cost_center=~\"$cost_center\"})",
+          "legendFormat": "Budget {{cost_center}}",
+          "refId": "B",
+          "range": true
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "currencyEUR",
+          "custom": { "lineWidth": 2, "fillOpacity": 5 }
+        },
+        "overrides": [
+          {
+            "matcher": { "id": "byRegexp", "options": "^Budget " },
+            "properties": [
+              { "id": "custom.lineStyle", "value": { "dash": [8, 4], "fill": "dash" } },
+              { "id": "custom.fillOpacity", "value": 0 }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "tooltip": { "mode": "multi" }
+      }
+    },
+    {
+      "id": 3,
+      "type": "table",
+      "title": "Budget Summary",
+      "gridPos": { "x": 16, "y": 8, "w": 8, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        {
+          "expr": "sum by (cost_center) (finops_demo_budget_monthly_eur)",
+          "legendFormat": "Budget",
+          "refId": "A",
+          "instant": true
+        },
+        {
+          "expr": "sum by (cost_center) (finops_demo_budget_spend_mtd_eur)",
+          "legendFormat": "MTD Spend",
+          "refId": "B",
+          "instant": true
+        }
+      ],
+      "fieldConfig": {
+        "defaults": { "unit": "currencyEUR" }
+      },
+      "options": { "footer": { "show": false } }
+    },
+    {
+      "id": 4,
+      "type": "stat",
+      "title": "Procurement — Over Budget Alert",
+      "description": "Procurement is projected to reach 105% of budget by end of demo period.",
+      "gridPos": { "x": 0, "y": 16, "w": 8, "h": 4 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        {
+          "expr": "sum(finops_demo_budget_spend_mtd_eur{cost_center=\"procurement\"}) / sum(finops_demo_budget_monthly_eur{cost_center=\"procurement\"}) * 100",
+          "legendFormat": "Procurement %",
+          "refId": "A",
+          "instant": true
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 85 },
+              { "color": "red", "value": 100 }
+            ]
+          }
+        }
+      },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "background" }
+    },
+    {
+      "id": 5,
+      "type": "stat",
+      "title": "Total Platform Spend (All Cost Centres)",
+      "gridPos": { "x": 8, "y": 16, "w": 8, "h": 4 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        {
+          "expr": "sum(finops_demo_budget_spend_mtd_eur)",
+          "legendFormat": "Total MTD",
+          "refId": "A",
+          "instant": true
+        }
+      ],
+      "fieldConfig": {
+        "defaults": { "unit": "currencyEUR" }
+      },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "value" }
+    },
+    {
+      "id": 6,
+      "type": "stat",
+      "title": "Total Monthly Budget",
+      "gridPos": { "x": 16, "y": 16, "w": 8, "h": 4 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        {
+          "expr": "sum(finops_demo_budget_monthly_eur)",
+          "legendFormat": "Total Budget",
+          "refId": "A",
+          "instant": true
+        }
+      ],
+      "fieldConfig": {
+        "defaults": { "unit": "currencyEUR" }
+      },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "value" }
+    }
+  ]
+}
