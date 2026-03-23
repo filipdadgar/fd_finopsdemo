@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: finops-exporter
+spec:
+  selector:
+    app: finops-exporter
+  ports:
+    - name: http
+      port: 8080
+      targetPort: 8080

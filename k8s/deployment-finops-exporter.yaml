@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: finops-exporter
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: finops-exporter
+  template:
+    metadata:
+      labels:
+        app: finops-exporter
+    spec:
+      containers:
+        - name: finops-exporter
+          image: ghcr.io/filipdadgar/fd_finopsdemo:main
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: APP_MODE
+              value: exporter
+            - name: DEMO_RANDOM_SEED
+              value: "42"
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              value: http://otel-collector:4317
+          ports:
+            - name: http
+              containerPort: 8080
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /health/ready
+              port: 8080
+            initialDelaySeconds: 15
+            periodSeconds: 10
