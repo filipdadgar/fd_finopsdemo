@@ -74,9 +74,6 @@ Dashboards repopulate within ~30 seconds.
 
 Set in `docker-compose.yml` or override with `-e DEMO_RANDOM_SEED=123`.
 
-## Demo Narrative
-
-See [specs/001-finops-strategy-enterprise/poc/quickstart.md](../specs/001-finops-strategy-enterprise/poc/quickstart.md) for the full 20-minute stakeholder walkthrough script.
 
 ## Architecture
 
